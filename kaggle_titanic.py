@@ -3,29 +3,38 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import pandas as pd 
 
-# Importing the dataset
-dataset = pd.read_excel('titanic3.xls', index_col=None)    #na_values=['NA']
-X=dataset.loc[:,['pclass','sex','age','sibsp','parch','fare']].values 
-y=dataset.loc[:,'survived'].values 
+# Importing the training dataset
+dataset1 = pd.read_csv('train.csv')
+X_train=dataset1.loc[:,['Pclass','Sex','Age','SibSp','Parch','Fare']].values 
+y_train=dataset1.loc[:,'Survived'].values 
+
+# Importing the test dataset
+dataset2 = pd.read_csv('test.csv')
+X_test=dataset2.loc[:,['Pclass','Sex','Age','SibSp','Parch','Fare']].values 
 
 # Taking care of missing data
 from sklearn.preprocessing import Imputer
 imputer = Imputer(missing_values = 'NaN', strategy = 'mean', axis = 0)
-imputer = imputer.fit(X[:, [2,5]])
-X[:, [2,5]] = imputer.transform(X[:, [2,5]])
+imputer = imputer.fit(X_train[:, [2,5]])
+X_train[:, [2,5]] = imputer.transform(X_train[:, [2,5]])
+
+imputer = imputer.fit(X_test[:, [2,5]])
+X_test[:, [2,5]] = imputer.transform(X_test[:, [2,5]])
+
 
 # Encoding categorical data
 # Encoding the Independent Variable
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 labelencoder_X = LabelEncoder()
-X[:, 1] = labelencoder_X.fit_transform(X[:, 1])
+X_train[:, 1] = labelencoder_X.fit_transform(X_train[:, 1])
 onehotencoder = OneHotEncoder(categorical_features = [1])
-X = onehotencoder.fit_transform(X).toarray()
-X=X[:,1:]
+X_train = onehotencoder.fit_transform(X_train).toarray()
+X_train=X_train[:,1:]
 
-#Splitting the dataset into Training set and Test set
-from sklearn.model_selection import train_test_split
-X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=0)
+X_test[:, 1] = labelencoder_X.fit_transform(X_test[:, 1])
+onehotencoder = OneHotEncoder(categorical_features = [1])
+X_test = onehotencoder.fit_transform(X_test).toarray()
+X_test=X_test[:,1:]
 
 #Feature scaling
 from sklearn.preprocessing import StandardScaler
@@ -40,7 +49,10 @@ classifier.fit(X_train, y_train)
 
 # Predicting the Test set results
 y_pred = classifier.predict(X_test)
-
+print(y_pred)
+np.savetxt('titanic.csv',y_pred,delimiter=",")
+"""
 # Making the Confusion Matrix
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
+print(cm)  """
